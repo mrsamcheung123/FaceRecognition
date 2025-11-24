@@ -8,8 +8,6 @@ const progress = document.querySelector('#progress');
 const dropzone = document.querySelector('#dropzone');
 const errorTemplate = document.querySelector('#errorTemplate');
 
-let currentImageBlob = null;
-
 function showError(message) {
   const errorNode = errorTemplate.content.cloneNode(true);
   errorNode.querySelector('.error').textContent = message;
@@ -55,9 +53,10 @@ async function sendImage(file) {
 function previewFile(file) {
   const reader = new FileReader();
   reader.onload = evt => {
-    currentImageBlob = evt.target.result;
     previewImage.src = evt.target.result;
     previewSection.hidden = false;
+    overlayCanvas.width = 0;
+    overlayCanvas.height = 0;
   };
   reader.readAsDataURL(file);
 }

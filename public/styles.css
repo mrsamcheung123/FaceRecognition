@@ -39,6 +39,11 @@ header h1 {
   gap: 1rem;
 }
 
+.uploader.dragging {
+  border-color: #2563eb;
+  background: #dbeafe;
+}
+
 .upload-label {
   display: flex;
   flex-direction: column;
