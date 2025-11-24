@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Face Recognition Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Face Recognition Demo</h1>
+      <p>Upload any photo to detect faces directly in your browser.</p>
+    </header>
+
+    <section class="uploader" id="dropzone">
+      <form id="uploadForm">
+        <label for="imageInput" class="upload-label">
+          <span>Click to choose or drag &amp; drop an image (JPG/PNG/WebP)</span>
+          <input id="imageInput" name="image" type="file" accept="image/*" required />
+        </label>
+        <button type="submit">Detect faces</button>
+      </form>
+      <div id="progress" class="hidden">Processing…</div>
+    </section>
+
+    <section class="preview" id="previewSection" hidden>
+      <div class="preview-canvas">
+        <img id="previewImage" alt="Preview" />
+        <canvas id="overlayCanvas"></canvas>
+      </div>
+      <div class="results">
+        <h2>Detections</h2>
+        <pre id="resultsJson">[]</pre>
+      </div>
+    </section>
+  </main>
+
+  <template id="errorTemplate">
+    <div class="error"></div>
+  </template>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
