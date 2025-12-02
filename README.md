@@ -1,22 +1,30 @@
-# RTSP Multi-Stream Viewer
+# RTSP Stream Viewer
 
-This project relays two RTSP feeds to any modern browser using Node.js, Express, and [`rtsp-relay`](https://github.com/kyriesent/rtsp-relay).
+This project streams two RTSP feeds to a web browser using Flask and OpenCV.
 
 ## Prerequisites
 
-- Node.js 18+ and npm
-- `ffmpeg` available on your `PATH` (required by `rtsp-relay` to transcode the RTSP feeds)
+- Python 3.x installed
+- Internet connection (to access the public RTSP streams)
 
-## Getting started
+## Setup
 
-```powershell
-Set-Location "c:\Users\mrsam\OneDrive\文件\GitHub\FaceRecognition"
-npm install
-npm start
-```
+1.  **Install Dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-Then open `http://localhost:3000` and both RTSP streams will appear side-by-side. Use `PORT` or `HOST` environment variables to override the defaults if needed.
+## Usage
 
-## Customizing streams
+1.  **Run the application:**
+    ```bash
+    python app.py
+    ```
 
-Update `streams` in `src/server.mjs` with any other RTSP endpoints you want to relay. Each stream automatically receives its own WebSocket endpoint (`/ws/{id}`), and the frontend consumes `/api/streams` to determine what to display.
+2.  **Open your browser:**
+    Go to [http://localhost:5000](http://localhost:5000)
+
+## Notes
+
+- The application uses OpenCV to capture RTSP streams and converts them to MJPEG for browser compatibility.
+- Performance depends on your network connection and the stability of the source RTSP streams.
