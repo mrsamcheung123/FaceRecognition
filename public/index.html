@@ -3,63 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RTSP Streams</title>
+    <title>Dual RTSP Stream Viewer</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: Arial, sans-serif;
-            background-color: #333;
-            color: white;
-            text-align: center;
-            margin: 0;
+            background-color: #1a1a1a;
+            color: #fff;
             padding: 20px;
         }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4CAF50;
+        }
+        
         .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
         }
+        
         .stream-box {
-            background: #000;
-            padding: 10px;
+            background-color: #2a2a2a;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
+        
+        .stream-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #4CAF50;
+        }
+        
         canvas {
-            width: 640px;
-            height: 360px;
-            display: block;
+            width: 100%;
+            height: auto;
+            background-color: #000;
+            border-radius: 4px;
         }
-        h2 {
-            margin-top: 0;
+        
+        .status {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .status.connected {
+            color: #4CAF50;
+        }
+        
+        .status.disconnected {
+            color: #f44336;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>RTSP Stream Viewer</h1>
+    <h1>Dual RTSP Stream Viewer</h1>
+    
     <div class="container">
         <div class="stream-box">
-            <h2>Stream 1</h2>
-            <canvas id="video-canvas-1"></canvas>
+            <div class="stream-title">Stream 1: Strba Lake View</div>
+            <canvas id="canvas1"></canvas>
+            <div class="status" id="status1">Connecting...</div>
         </div>
+        
         <div class="stream-box">
-            <h2>Stream 2</h2>
-            <canvas id="video-canvas-2"></canvas>
+            <div class="stream-title">Stream 2: Axis Camera</div>
+            <canvas id="canvas2"></canvas>
+            <div class="status" id="status2">Connecting...</div>
         </div>
     </div>
 
-    <!-- Load JSMpeg from CDN -->
-    <script src="https://cdn.jsdelivr.net/gh/phoboslab/jsmpeg@master/jsmpeg.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsmpeg@0.2.0/jsmpeg.min.js"></script>
     <script>
-        // Stream 1
-        var canvas1 = document.getElementById('video-canvas-1');
-        var url1 = 'ws://' + document.location.hostname + ':9991';
-        var player1 = new JSMpeg.Player(url1, {canvas: canvas1});
+        // Stream 1 Player
+        const player1 = new JSMpeg.Player('ws://localhost:9999', {
+            canvas: document.getElementById('canvas1'),
+            autoplay: true,
+            audio: false,
+            videoBufferSize: 512 * 1024,
+            onSourceEstablished: function() {
+                document.getElementById('status1').textContent = 'Connected';
+                document.getElementById('status1').classList.add('connected');
+                document.getElementById('status1').classList.remove('disconnected');
+            },
+            onSourceCompleted: function() {
+                document.getElementById('status1').textContent = 'Disconnected';
+                document.getElementById('status1').classList.add('disconnected');
+                document.getElementById('status1').classList.remove('connected');
+            }
+        });
 
-        // Stream 2
-        var canvas2 = document.getElementById('video-canvas-2');
-        var url2 = 'ws://' + document.location.hostname + ':9992';
-        var player2 = new JSMpeg.Player(url2, {canvas: canvas2});
+        // Stream 2 Player
+        const player2 = new JSMpeg.Player('ws://localhost:9998', {
+            canvas: document.getElementById('canvas2'),
+            autoplay: true,
+            audio: false,
+            videoBufferSize: 512 * 1024,
+            onSourceEstablished: function() {
+                document.getElementById('status2').textContent = 'Connected';
+                document.getElementById('status2').classList.add('connected');
+                document.getElementById('status2').classList.remove('disconnected');
+            },
+            onSourceCompleted: function() {
+                document.getElementById('status2').textContent = 'Disconnected';
+                document.getElementById('status2').classList.add('disconnected');
+                document.getElementById('status2').classList.remove('connected');
+            }
+        });
+
+        // Handle connection errors
+        window.addEventListener('error', function(e) {
+            console.error('Error:', e);
+        });
     </script>
 </body>
 </html>
