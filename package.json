@@ -1,17 +1,13 @@
 {
-  "name": "rtsp-dual-stream",
+  "name": "rtsp-dual-streamer",
   "version": "1.0.0",
-  "description": "Stream 2 RTSP feeds simultaneously in the browser",
-  "main": "server.js",
+  "description": "Node.js server that restreams two RTSP feeds to browsers via WebSocket/MPEG1 (jsmpeg).",
+  "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
-  "keywords": ["rtsp", "streaming", "websocket"],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "node-rtsp-stream": "^0.0.9",
-    "ws": "^8.14.2"
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
   }
 }

@@ -1,109 +1,55 @@
-# Dual RTSP Stream Viewer
+# Dual RTSP Streamer
 
-Stream 2 RTSP feeds simultaneously in your browser using Node.js, Express, and WebSockets.
+Node.js + ffmpeg restreamer that pulls two RTSP feeds concurrently and delivers them to browsers via WebSocket/MPEG-TS (jsmpeg player). The default feeds are:
 
-## Features
-
-- Streams 2 RTSP sources at the same time
-- Real-time video streaming in the browser
-- Responsive grid layout
-- Connection status indicators
-- No browser plugins required
-
-## RTSP Sources
-
-1. **Stream 1**: Strba Lake View - `rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream`
-2. **Stream 2**: Axis Camera - `rtsp://196.21.92.82/axis-media/media.amp`
+1. `rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream`
+2. `rtsp://196.21.92.82/axis-media/media.amp`
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
-- npm
-- FFmpeg installed on your system
+- Node.js 18+ (for native ES modules and fetch API parity)
+- ffmpeg available on your system `PATH` (the server spawns it for each stream)
+- Network access to the RTSP endpoints (firewall friendly outbound TCP/UDP)
 
-### Installing FFmpeg
+## Install
 
-**Windows:**
-```bash
-# Using Chocolatey
-choco install ffmpeg
-
-# Or download from https://ffmpeg.org/download.html
-```
-
-**macOS:**
-```bash
-brew install ffmpeg
-```
-
-**Linux:**
-```bash
-sudo apt-get install ffmpeg
-```
-
-## Installation
-
-1. Clone or navigate to the project directory:
-```bash
+```powershell
 cd FaceRecognition
-```
-
-2. Install dependencies:
-```bash
 npm install
 ```
 
-## Usage
+## Run
 
-1. Start the server:
-```bash
+```powershell
 npm start
 ```
 
-2. Open your browser and navigate to:
+Then open `http://localhost:3000` in a browser. The page will auto-connect to both WebSocket endpoints (`/ws/strba-lake`, `/ws/axis-demo`) and display them side-by-side.
+
+## How it works
+
+- Each RTSP entry in `src/server.js` spawns an ffmpeg process when at least one browser client connects to its WebSocket.
+- ffmpeg pulls the RTSP feed over TCP, transcodes it to MPEG1 video inside an MPEG-TS container, and pushes the bytes to stdout.
+- The Node server fans those bytes out to every connected WebSocket client.
+- The browser uses [jsmpeg](https://github.com/phoboslab/jsmpeg) to decode the MPEG1 stream onto a `<canvas>`.
+- When the last viewer disconnects, the server stops the corresponding ffmpeg process to conserve bandwidth/CPU.
+
+## Customizing streams
+
+Edit the `RTSP_STREAMS` array inside `src/server.js` to point at other RTSP cameras:
+
+```js
+const RTSP_STREAMS = [
+  { id: 'cam-1', name: 'Lobby', url: 'rtsp://example/camera01' },
+  { id: 'cam-2', name: 'Parking', url: 'rtsp://example/camera02' }
+];
 ```
-http://localhost:3000
-```
 
-You should see both RTSP streams playing simultaneously in a side-by-side grid layout.
-
-## How It Works
-
-- **Backend**: Node.js server uses `node-rtsp-stream` to convert RTSP streams to MPEG1 format and transmit via WebSockets
-- **Frontend**: JSMpeg player decodes and displays the streams in HTML5 canvas elements
-- **Stream 1**: WebSocket on port 9999
-- **Stream 2**: WebSocket on port 9998
-- **Web Server**: HTTP server on port 3000
+The `id` must remain URL-safe because it becomes part of the WebSocket path (`/ws/<id>`). Add additional entries to support more than two cameras—no extra front-end changes required.
 
 ## Troubleshooting
 
-### Streams not loading
-- Verify FFmpeg is installed: `ffmpeg -version`
-- Check if RTSP URLs are accessible from your network
-- Ensure ports 3000, 9999, and 9998 are not in use
-- Check firewall settings
-
-### Poor video quality
-- Adjust the `-q:v` parameter in `server.js` (lower = better quality, higher CPU usage)
-- Modify the `-r` (frame rate) parameter
-
-### High CPU usage
-- Reduce frame rate in `server.js`
-- Increase `-q:v` value for lower quality
-- Consider using a more powerful server
-
-## Configuration
-
-Edit `server.js` to customize:
-
-```javascript
-ffmpegOptions: {
-  '-stats': '',
-  '-r': 30,        // Frame rate (fps)
-  '-q:v': 3        // Quality (1-31, lower = better)
-}
-```
-
-## License
-
-ISC
+- **Black canvas or “Connecting…” forever** – confirm ffmpeg can pull the RTSP feed directly: `ffmpeg -i <url> -f null -`. Some public cameras occasionally limit concurrent viewers.
+- **`ffmpeg` command not found** – install ffmpeg and ensure it’s in your PATH (e.g., via [ffmpeg.org](https://ffmpeg.org/download.html) or package managers like `choco install ffmpeg`).
+- **Firewall blocks RTSP** – the default args use TCP transport; switch to UDP by removing `-rtsp_transport tcp` if your network allows it.
+- **High CPU/bandwidth** – lower `-b:v` or `-r` in `startFfmpeg()` to reduce bitrate.
